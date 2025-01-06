@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            height: 100vh; /* Ensure full viewport height */
+            flex-direction: column; /* Stack video and button vertically */
+        }
+
+        video {
+            display: block;
+            margin-bottom: 20px; /* Space between video and button */
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        p {
+            color: rgb(3, 3, 3);
+            background-color: rgb(214, 214, 214);
+        }
+    </style>
+</head>
+<body>
+    <video controls width="640">
+        <source src="/clip" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <button id="guessButton">guess</button>
+    <p>next run: <strong>{{ .NextRun }}</strong></p>
+
+    <script>
+        document.getElementById('guessButton').addEventListener('click', function() {
+            const userGuess = prompt('Guess the episode number (to guess s1e4, enter \'104\'):');
+            const correctAnswer = '{{ .ClipName }}';
+            if (userGuess === correctAnswer) {
+                alert('Oh my god you are a genius YES YOU ARE');
+            } else {
+                alert('Bruh you dont know shit');
+            }
+        });
+    </script>
+</body>
+</html>

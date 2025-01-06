@@ -1,0 +1,16 @@
+services:
+  clips:
+    build: .
+    env_file:
+      - .env
+    volumes:
+      - ./var:/app/var
+      - ${CLIPS_MEDIA_DIR}:/app/media
+    command: ./app --port 8000 --var-dir /app/var --media-dir /app/media
+
+  cloudflared:
+    restart: unless-stopped
+    image: cloudflare/cloudflared:latest
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
