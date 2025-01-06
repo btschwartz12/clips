@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            height: 100vh; /* Ensure full viewport height */
+            flex-direction: column; /* Stack video and button vertically */
+        }
+
+        video {
+            display: block;
+            margin-bottom: 20px; /* Space between video and button */
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <video controls width="640">
+        <source src="/clip" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <button id="guessButton">Guess</button>
+
+    <script>
+        document.getElementById('guessButton').addEventListener('click', function() {
+            const userGuess = prompt('Guess the episode number (e.g., 104, 612):');
+            const correctAnswer = '{{ .ClipName }}';
+            if (userGuess === correctAnswer) {
+                alert('Correct!');
+            } else {
+                alert('Bruh you dont know shit');
+            }
+        });
+    </script>
+</body>
+</html>
