@@ -37,7 +37,7 @@
 
     <script>
         document.getElementById('guessButton').addEventListener('click', function() {
-            const userGuess = prompt('Guess the episode number (e.g., 104, 612):');
+            const userGuess = prompt('Guess the episode number (to guess s1e4, enter \'104\'):');
             const correctAnswer = '{{ .ClipName }}';
             if (userGuess === correctAnswer) {
                 alert('Correct!');
