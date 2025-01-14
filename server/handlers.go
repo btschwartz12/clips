@@ -19,7 +19,7 @@ type HomePageData struct {
 }
 
 func (s *Server) health(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("OKr"))
+	w.Write([]byte("OK"))
 }
 
 func (s *Server) home(w http.ResponseWriter, r *http.Request) {
