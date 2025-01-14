@@ -12,13 +12,13 @@ import (
 )
 
 type Server struct {
-	router          *chi.Mux
-	logger          *zap.SugaredLogger
-	mediaDir 	    string
-	varDir		    string
-	availableFiles  []string
-	currentClip     *Clip
-	clipDuration    time.Duration
+	router         *chi.Mux
+	logger         *zap.SugaredLogger
+	mediaDir       string
+	varDir         string
+	availableFiles []string
+	currentClip    *Clip
+	clipDuration   time.Duration
 }
 
 func (s *Server) Init(
@@ -42,6 +42,7 @@ func (s *Server) Init(
 
 	s.router.Get("/", s.home)
 	s.router.Get("/clip", s.serveClip)
+	s.router.Get("/health", s.health)
 
 	files, err := s.getVideoFiles()
 	if err != nil {

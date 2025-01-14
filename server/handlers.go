@@ -18,6 +18,10 @@ type HomePageData struct {
 	ClipName string
 }
 
+func (s *Server) health(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("OK"))
+}
+
 func (s *Server) home(w http.ResponseWriter, r *http.Request) {
 	data := HomePageData{
 		ClipName: s.currentClip.Name,
@@ -33,3 +37,4 @@ func (s *Server) home(w http.ResponseWriter, r *http.Request) {
 func (s *Server) serveClip(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, s.currentClip.Path)
 }
+
