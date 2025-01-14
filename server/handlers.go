@@ -19,7 +19,7 @@ type HomePageData struct {
 }
 
 func (s *Server) health(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("OK"))
+	w.Write([]byte("OK!"))
 }
 
 func (s *Server) home(w http.ResponseWriter, r *http.Request) {
@@ -37,4 +37,3 @@ func (s *Server) home(w http.ResponseWriter, r *http.Request) {
 func (s *Server) serveClip(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, s.currentClip.Path)
 }
-
