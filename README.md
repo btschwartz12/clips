@@ -33,21 +33,16 @@ $ tree /Volumes/SAUL
 ...
 ```
 
-### 2. Install `ffmpeg`
+### 2. Make a config file
+
+Create a `config.yaml` file with the specification of which medias to use. See [example.yaml](media/example.yaml) for an example.
+
+
+### 4. Install `ffmpeg`
 
 This project uses `ffmpeg` to generate clips. You can figure out how to install it. Just ensure you have the binaries `ffmpeg` and `ffprobe` in your `PATH`.
 
-### 3. Set up your environment
-
-However you want to do it, you need to have the following environment variables set:
-
-```bash
-CLIPS_MEDIA_DIR=/Volumes/SAUL # or wherever your media directory is
-CLIPS_DURATION=30s            # the duration of each clip (must be parsable by time.ParseDuration)
-CLIPS_TIME_OF_DAY=12:00:00    # the time of day to regenerate a new clip (EST)
-```
-
-### 4. Run the server
+### 5. Run the server
 
 Although I would run this with Docker Compose through a Cloudflare Tunnel (see [compose.yml](compose.yml)), I'm just going to describe how to run it naively.
 
@@ -56,8 +51,11 @@ Make sure you have the above environment variables set, then run the following:
 ```bash
 $ pwd
 /path/to/clips
-$ make clean && make app
-$ ./app --port 8000
+$ make clean && make clips 
+$ ./clips \
+    --port 8000 \
+    --var-dir var \
+    --config-file config.yaml
 ```
 
 Now, you can visit `http://localhost:8000` in your browser to see a random clip!

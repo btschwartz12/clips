@@ -3,39 +3,37 @@ package server
 import (
 	"fmt"
 	"os"
-	"path/filepath"
-	"strings"
-	"time"
 
+	"github.com/btschwartz12/clips/media"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-co-op/gocron/v2"
 	"go.uber.org/zap"
 )
 
 type Server struct {
-	router         *chi.Mux
-	logger         *zap.SugaredLogger
-	mediaDir       string
-	varDir         string
-	availableFiles []string
-	currentClip    *Clip
-	clipDuration   time.Duration
-	scheduler      gocron.Scheduler
-	job            gocron.Job
+	router    *chi.Mux
+	logger    *zap.SugaredLogger
+	config    *media.Config
+	varDir    string
+	scheduler gocron.Scheduler
 }
 
 func (s *Server) Init(
 	logger *zap.SugaredLogger,
-	mediaDir string,
 	varDir string,
-	clipDuration time.Duration,
-	timeOfDay time.Time,
+	configPath string,
 ) error {
 	s.logger = logger
-	if _, err := os.Stat(mediaDir); os.IsNotExist(err) {
-		return fmt.Errorf("media directory does not exist: %s", mediaDir)
+
+	yamlBytes, err := os.ReadFile(configPath)
+	if err != nil {
+		return fmt.Errorf("error reading config file: %w", err)
 	}
-	s.mediaDir = mediaDir
+
+	s.config, err = media.NewConfig(yamlBytes)
+	if err != nil {
+		return fmt.Errorf("error creating config: %w", err)
+	}
 
 	if _, err := os.Stat(varDir); os.IsNotExist(err) {
 		err = os.Mkdir(varDir, 0755)
@@ -44,30 +42,16 @@ func (s *Server) Init(
 		}
 	}
 	s.varDir = varDir
-	s.clipDuration = clipDuration
-	s.router = chi.NewRouter()
 
+	s.router = chi.NewRouter()
 	s.router.Get("/", s.home)
-	s.router.Get("/clip", s.serveClip)
+	s.router.Get("/clip/{name}", s.serveClip)
 	s.router.Get("/health", s.health)
 
-	files, err := s.getVideoFiles()
-	if err != nil {
-		return fmt.Errorf("error getting video files: %w", err)
-	}
-	s.availableFiles = files
-	logger.Infow("available video files", "numFiles", len(files))
-
-	err = s.startCron(timeOfDay)
+	err = s.startCron()
 	if err != nil {
 		return fmt.Errorf("error starting cron: %w", err)
 	}
-	nextRun, err := s.job.NextRun()
-	if err != nil {
-		return fmt.Errorf("error getting next run time: %w", err)
-	}
-	logger.Infow("next run time", "time", nextRun)
-
 	return nil
 }
 
@@ -75,34 +59,15 @@ func (s *Server) Router() *chi.Mux {
 	return s.router
 }
 
-func (s *Server) getVideoFiles() ([]string, error) {
-	var files []string
-
-	err := filepath.Walk(s.mediaDir, func(path string, info os.FileInfo, err error) error {
-		if strings.HasPrefix(filepath.Base(path), ".") {
-			return nil
-		}
-		if err != nil {
-			s.logger.Errorw("error walking directory", "error", err)
-			return nil
-		}
-		if info.IsDir() {
-			return nil
-		}
-		if strings.HasSuffix(strings.ToLower(info.Name()), ".mp4") {
-			files = append(files, path)
-		}
-		return nil
-	})
-
-	if err != nil {
-		return nil, fmt.Errorf("error walking directory: %w", err)
-	}
-
-	return files, nil
-}
-
 func (s *Server) Teardown() {
+	for _, m := range s.config.Medias {
+		if m.CurrentClip.IsPresent() {
+			err := os.Remove(m.CurrentClip.MustGet().Path)
+			if err != nil {
+				s.logger.Errorw("error deleting media file", "error", err)
+			}
+		}
+	}
 	err := s.scheduler.Shutdown()
 	if err != nil {
 		s.logger.Errorw("error shutting down scheduler", "error", err)

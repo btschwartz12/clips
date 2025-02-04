@@ -1,55 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: transparent;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            height: 100vh; /* Ensure full viewport height */
-            flex-direction: column; /* Stack video and button vertically */
-        }
-
-        video {
-            display: block;
-            margin-bottom: 20px; /* Space between video and button */
-        }
-
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        p {
-            color: rgb(3, 3, 3);
-            background-color: rgb(214, 214, 214);
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <style>
+    .tabs {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    .tab-titles {
+      list-style: none;
+      margin: 0;
+      padding: 10px;
+      display: flex;
+      justify-content: center;
+      background-color: #eee;
+    }
+    .tab-titles li {
+      margin: 0 8px;
+    }
+    .tab-titles li a {
+      text-decoration: none;
+      padding: 5px 10px;
+      background-color: #ccc;
+      color: #000;
+    }
+    .tab-titles li a:hover {
+      background-color: #aaa;
+    }
+    .tab-content {
+      flex: 1;
+      display: flex;
+    }
+    .tab-pane {
+      display: none;
+      flex-direction: column;
+      width: 100%;
+    }
+    .video-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .video-container video {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    .video-info {
+      text-align: center;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
-    <video controls width="640">
-        <source src="/clip" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
-    <button id="guessButton">guess</button>
-    <p>next update: <strong>{{ .NextRun }}</strong></p>
 
-    <script>
-        document.getElementById('guessButton').addEventListener('click', function() {
-            const userGuess = prompt('Guess the episode number (to guess s1e4, enter \'104\'):');
-            const correctAnswer = '{{ .ClipName }}';
-            if (userGuess === correctAnswer) {
-                alert('Oh my god you are a genius YES YOU ARE');
-            } else {
-                alert('Bruh you dont know shit');
-            }
-        });
-    </script>
+<div class="tabs">
+  <ul class="tab-titles">
+    {{ range $index, $tab := .Tabs }}
+      <li><a href="#tab-{{ $index }}">{{ $tab.Name }}</a></li>
+    {{ end }}
+  </ul>
+
+  <div class="tab-content">
+    {{ range $index, $tab := .Tabs }}
+      <div id="tab-{{ $index }}" class="tab-pane">
+        <div class="video-container">
+          <video controls>
+            <source src="/clip/{{ $tab.Name }}" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="video-info">
+          <p>Next run: <strong>{{ $tab.NextRun }}</strong></p>
+          {{ if $tab.Guessable }}
+            <button onclick="guess('{{ $tab.Name }}')">Guess</button>
+          {{ end }}
+          {{ if $tab.ClipName }}
+            <button onclick="revealFilename('{{ $tab.ClipName }}', this)">Reveal Filename</button>
+            <span class="video-filename" style="display: none;"></span>
+          {{ end }}
+        </div>
+      </div>
+    {{ end }}
+  </div>
+</div>
+
+<script>
+function guess(correctAnswer) {
+  const userGuess = prompt("Guess the episode number (to guess s1e4, enter '104')");
+  if (userGuess === correctAnswer) {
+    alert("Oh my god you are a genius YES YOU ARE");
+  } else {
+    alert("Bruh you dont know shit");
+  }
+}
+
+function revealFilename(filename, btn) {
+  const span = btn.nextElementSibling;
+  span.textContent = filename;
+  span.style.display = 'inline';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const tabs = document.querySelectorAll('.tab-titles li a');
+  const panes = document.querySelectorAll('.tab-pane');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', e => {
+      e.preventDefault();
+      panes.forEach(p => p.style.display = 'none');
+      const target = document.querySelector(tab.getAttribute('href'));
+      if (target) target.style.display = 'flex';
+    });
+  });
+
+  if (tabs.length > 0) {
+    tabs[0].click();
+  }
+});
+</script>
+
 </body>
 </html>

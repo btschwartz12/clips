@@ -17,57 +17,48 @@ func init() {
 	}
 }
 
-func (s *Server) addJob(jobFunc any, timeOfDay time.Time) (gocron.Job, error) {
-	hours, minutes, seconds, err := parseToDuration(timeOfDay)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing time to duration: %w", err)
+func (s *Server) addJobs() error {
+	for i := range s.config.Medias {
+		jd, task, err := s.config.Medias[i].GetJob(s.logger, s.varDir)
+		if err != nil {
+			return fmt.Errorf("error getting job: %w", err)
+		}
+		j, err := s.scheduler.NewJob(jd, task)
+		if err != nil {
+			return fmt.Errorf("error creating job: %w", err)
+		}
+		s.config.Medias[i].SetJob(j)
 	}
-	j, err := s.scheduler.NewJob(
-		gocron.DailyJob(
-			1,
-			gocron.NewAtTimes(
-				gocron.NewAtTime(hours, minutes, seconds),
-			),
-		),
-		gocron.NewTask(
-			jobFunc,
-		),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("error creating job: %w", err)
-	}
-	return j, nil
+	return nil
 }
 
-func parseToDuration(t time.Time) (hours, minutes, seconds uint, err error) {
-	h := t.Hour()
-	m := t.Minute()
-	s := t.Second()
-
-	if m < 0 || m >= 60 || s < 0 || s >= 60 {
-		return 0, 0, 0, fmt.Errorf("invalid time values: hours=%d, minutes=%d, seconds=%d", h, m, s)
-	}
-
-	return uint(h), uint(m), uint(s), nil
-}
-
-func (s *Server) startCron(timeOfDay time.Time) error {
+func (s *Server) startCron() error {
 	sch, err := gocron.NewScheduler(gocron.WithLocation(est))
 	if err != nil {
 		return fmt.Errorf("error creating scheduler: %w", err)
 	}
 	s.scheduler = sch
 
-	s.job, err = s.addJob(s.updateClipAsync, timeOfDay)
+	err = s.addJobs()
 	if err != nil {
-		return fmt.Errorf("error creating job: %w", err)
+		return fmt.Errorf("error adding jobs: %w", err)
 	}
 	s.scheduler.Start()
 
-	s.logger.Infow("cron started, running job now")
-	err = s.job.RunNow()
-	if err != nil {
-		return fmt.Errorf("error running job now: %w", err)
+	s.logger.Infow("cron started, running jobs now")
+	for _, m := range s.config.Medias {
+		err := m.RunJobNow()
+		if err != nil {
+			return fmt.Errorf("error running job now: %w", err)
+		}
+	}
+	s.logger.Infow("jobs have been run initially")
+	for _, m := range s.config.Medias {
+		nextRun, err := m.GetNextRun()
+		if err != nil {
+			return fmt.Errorf("error getting next run time: %w", err)
+		}
+		s.logger.Infow("next run time", "media", m.Name, "time", nextRun)
 	}
 	return nil
 }

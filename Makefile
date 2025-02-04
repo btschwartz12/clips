@@ -1,11 +1,11 @@
-app:
-	CGO_ENABLED=0 go build -o app main.go
+clips:
+	CGO_ENABLED=0 go build -o clips main.go
 
-run-server: app
-	godotenv -f .env ./app \
+run-server: clips
+	godotenv -f .env ./clips \
 		--port 8000 \
 		--var-dir var \
-		--media-dir /Volumes/SAUL
+		--config-file config.yaml
 
 clean:
-	rm -f app
+	rm -f clips

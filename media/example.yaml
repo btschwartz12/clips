@@ -1,0 +1,20 @@
+medias:
+  - name: Media 1
+    path: sample_media/media1
+    clip-duration: 10s
+    guessable: true
+    update-times:
+      - 10:00
+      - 12:00
+  
+  - name: Media 2
+    path: sample_media/media2
+    clip-duration: 1m
+    update-times:
+      - 20:00
+  
+  - name: Media 3
+    path: sample_media/media3
+    clip-duration: 30s
+    update-times:
+      - 15:00

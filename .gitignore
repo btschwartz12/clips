@@ -1,5 +1,5 @@
-app
+clips
 var
-media
 .env
 .DS_Store
+config.yaml
