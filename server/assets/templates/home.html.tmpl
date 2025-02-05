@@ -75,7 +75,7 @@
         <div class="video-info">
           <p>Next run: <strong>{{ $tab.NextRun }}</strong></p>
           {{ if $tab.Guessable }}
-            <button onclick="guess('{{ $tab.Name }}')">Guess</button>
+            <button onclick="guess('{{ $tab.ClipName }}')">Guess</button>
           {{ end }}
           {{ if $tab.ClipName }}
             <button onclick="revealFilename('{{ $tab.ClipName }}', this)">Reveal Filename</button>
@@ -98,9 +98,7 @@ function guess(correctAnswer) {
 }
 
 function revealFilename(filename, btn) {
-  const span = btn.nextElementSibling;
-  span.textContent = filename;
-  span.style.display = 'inline';
+    alert(filename)
 }
 
 document.addEventListener('DOMContentLoaded', function() {
