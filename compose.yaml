@@ -9,9 +9,9 @@ services:
       - /mnt/ssd1_500/media-backup/media:/mnt/ssd1_500/media-backup/media
     command: ./app --port 8000 --var-dir /app/var --config-file /app/config.yaml
 
-  cloudflared:
-    restart: unless-stopped
-    image: cloudflare/cloudflared:latest
-    command: tunnel run
-    environment:
-      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    networks:
+      - site_network
+
+networks:
+  site_network:
+    external: true
