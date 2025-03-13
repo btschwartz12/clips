@@ -44,14 +44,14 @@ This project uses `ffmpeg` to generate clips. You can figure out how to install 
 
 ### 5. Run the server
 
-Although I would run this with Docker Compose through a Cloudflare Tunnel (see [compose.yml](compose.yml)), I'm just going to describe how to run it naively.
+Although I would run this with Docker Compose through a Cloudflare Tunnel (see [compose.yml](compose.yml)), I'm just going to describe how to run it locally.
 
 Make sure you have the above environment variables set, then run the following:
 
 ```bash
 $ pwd
 /path/to/clips
-$ make clean && make clips 
+$ make clean && make clips
 $ ./clips \
     --port 8000 \
     --var-dir var \
